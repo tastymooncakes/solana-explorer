@@ -43,3 +43,12 @@ export interface SortOptions {
     field: 'blockTime' | 'slot';
     description: 'asc' | 'desc';
 }
+
+export interface AccountData {
+    pubKey: string;
+    writable: boolean;
+    signer: boolean;
+    programOwner?: string;
+    balance?: number;
+    displayName?: string;
+}
