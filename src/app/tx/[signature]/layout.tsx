@@ -1,8 +1,8 @@
-export async function generateMetadata({ params }: { params: { transaction: string } }) {
-    const { transaction } = await Promise.resolve(params); // ensures compatibility with async behavior
+export async function generateMetadata({ params }: { params: { signature: string } }) {
+    const { signature } = await Promise.resolve(params); // ensures compatibility with async behavior
     return {
-      title: `Transaction | ${transaction} | Solana Explorer`,
-      description: `Details for Solana tx #${transaction}`,
+      title: `Transaction | ${signature} | Solana Explorer`,
+      description: `Details for Solana tx #${signature}`,
     };
   }
     
