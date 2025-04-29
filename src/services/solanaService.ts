@@ -1,6 +1,5 @@
 import { Connection } from '@solana/web3.js';
 import { BlockData, TransactionData, SearchResult } from '@/lib/types';
-import { stat } from 'fs';
 
 const DEFAULT_BLOCK_LIMIT = 10;
 
@@ -139,7 +138,12 @@ export class SolanaService {
 
                     let computeUnits: number | null = null;
                     if (tx.meta && tx.meta.computeUnitsConsumed) {
-                        computeUnits = tx.meta.computeUnitsConsumed;
+                        if (tx.meta.computeUnitsConsumed <= 2100) {
+                            computeUnits = 0
+                        }
+                        else {
+                            computeUnits = tx.meta.computeUnitsConsumed;
+                        }
                     }
                     
                     // Create transaction data object
