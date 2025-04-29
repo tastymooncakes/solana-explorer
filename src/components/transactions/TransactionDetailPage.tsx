@@ -6,6 +6,8 @@ import { TransactionData } from "@/lib/types";
 import TransactionBlock from "./TransactionBlock";
 import { useParams } from 'next/navigation';
 import SearchBar from "../search/SearchBar";
+import AccountView from "./AccountView";
+import LogView from "./LogView";
 
 export default function TransactionDetailPage() {
     const params = useParams();
@@ -67,7 +69,13 @@ export default function TransactionDetailPage() {
                 </div>
             )}
             
-            {!loading && !error && transaction && <TransactionBlock transaction={transaction} />}
+            {!loading && !error && transaction && (
+                <>
+                    <TransactionBlock transaction={transaction} />
+                    {transaction.accounts && <AccountView accounts={transaction.accounts} />}
+                    {transaction.logs && <LogView logs={transaction.logs} />}
+                </>
+            )}
         </div>
     );
 }

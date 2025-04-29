@@ -1,5 +1,5 @@
 import { Connection } from '@solana/web3.js';
-import { BlockData, TransactionData, SearchResult } from '@/lib/types';
+import { BlockData, TransactionData, SearchResult, InstructionData, AccountData } from '@/lib/types';
 
 const DEFAULT_BLOCK_LIMIT = 10;
 
@@ -187,6 +187,52 @@ export class SolanaService {
         }
     }
 
+    private extractInstructions(transaction: any): InstructionData[] {
+        const instructions: InstructionData[] = [];
+        if (transaction.transaction.message.instructions) {
+            for (const instruction of transaction.transaction.message.instructions) {
+                instructions.push({
+                    programId: instruction.programId.toBase58(),
+                    accounts: instruction.accounts.map((accountIndex: number) => // Specify accountIndex type
+                        transaction.transaction.message.accountKeys[accountIndex].toBase58()
+                    ),
+                    data: instruction.data.toString('hex'),
+                });
+            }
+        }
+        return instructions;
+    }
+
+    private async extractAccounts(transaction: any): Promise<AccountData[]> {
+        const accounts: AccountData[] = [];
+        if (transaction.transaction.message.accountKeys) {
+            for (let i = 0; i < transaction.transaction.message.accountKeys.length; i++) {
+                const accountKey = transaction.transaction.message.accountKeys[i];
+                const accountData: AccountData = {
+                    pubKey: accountKey.toBase58(),
+                    writable: transaction.transaction.message.isAccountWritable(accountKey, false),
+                    signer: transaction.transaction.message.isAccountSigner(accountKey, false),
+                };
+    
+                //  Logic to determine change and postBalance
+                try {
+                    if (transaction.meta && transaction.meta.preBalances && transaction.meta.postBalances) {
+                        accountData.change = transaction.meta.postBalances[i] - transaction.meta.preBalances[i];
+                        accountData.balance = transaction.meta.postBalances[i];
+                    }
+                } catch (error) {
+                    console.error(`Error processing account ${accountKey.toBase58()}:`, error);
+                    accountData.change = null;
+                    accountData.balance = null;
+                    accountData.details = null;
+                }
+    
+                accounts.push(accountData);
+            }
+        }
+        return accounts;
+    }
+
     /**
      * Get Transaction Information
      * @param signature Transaction Signature
@@ -235,6 +281,8 @@ export class SolanaService {
                 confirmations: status?.value?.confirmations ?? 'max',
                 recentBlockHash: transaction.transaction?.message?.recentBlockhash,
                 version: version,
+                logs: transaction.meta?.logMessages || [],
+                accounts: await this.extractAccounts(transaction),
             };
 
             this.transactionCache.set(signature, transactionData);

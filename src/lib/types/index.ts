@@ -26,6 +26,9 @@ export interface TransactionData {
     confirmations?: number | 'max';
     recentBlockHash?: string;
     version?: string;
+    instructions?: InstructionData[];
+    accounts?: AccountData[];
+    logs?: string[];
 }
 
 export interface SearchResult {
@@ -49,6 +52,9 @@ export interface AccountData {
     writable: boolean;
     signer: boolean;
     programOwner?: string;
-    balance?: number;
+    balance?: number | null;
+    change?: number | null;
+    details?: any;
     displayName?: string;
+
 }
