@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import SearchBar from "../search/SearchBar";
 import AccountView from "./AccountView";
 import LogView from "./LogView";
+import InstructionView from "./InstructionView";
 
 export default function TransactionDetailPage() {
     const params = useParams();
@@ -72,6 +73,7 @@ export default function TransactionDetailPage() {
             {!loading && !error && transaction && (
                 <>
                     <TransactionBlock transaction={transaction} />
+                    {transaction.instructions && <InstructionView instructions={transaction.instructions} />}
                     {transaction.accounts && <AccountView accounts={transaction.accounts} />}
                     {transaction.logs && <LogView logs={transaction.logs} />}
                 </>

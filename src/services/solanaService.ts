@@ -196,12 +196,13 @@ export class SolanaService {
                 for (const instruction of transaction.transaction.message.instructions) {
                     try {
                         instructions.push({
-                            programId: instruction.programId?.toBase58() || '',
+                            programId: transaction.transaction.message.accountKeys[instruction.programIdIndex]?.toBase58() || '',
                             accounts: instruction.accounts?.map((accountIndex: number) => 
                                 transaction.transaction.message.accountKeys[accountIndex]?.toBase58() || ''
                             ) || [],
                             data: instruction.data?.toString('hex') || '',
                         });
+                        console.log("instructions", instructions)
                     } catch (err) {
                         console.error('Error processing instruction:', err);
                         // Add a placeholder or partial data instead of failing the entire method
@@ -219,7 +220,7 @@ export class SolanaService {
                     for (const innerInstruction of innerInstructionSet.instructions) {
                         try {
                             instructions.push({
-                                programId: innerInstruction.programId?.toBase58() || '',
+                                programId: transaction.transaction.message.accountKeys[innerInstruction.programIdIndex]?.toBase58() || '',
                                 accounts: innerInstruction.accounts?.map((accountIndex: number) => 
                                     transaction.transaction.message.accountKeys[accountIndex]?.toBase58() || ''
                                 ) || [],
