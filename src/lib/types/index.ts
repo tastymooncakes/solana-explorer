@@ -40,6 +40,7 @@ export interface InstructionData {
     programId: string;
     accounts: string[];
     data: string;
+    isInner?: boolean;
 }
 
 export interface SortOptions {

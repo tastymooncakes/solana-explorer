@@ -189,17 +189,53 @@ export class SolanaService {
 
     private extractInstructions(transaction: any): InstructionData[] {
         const instructions: InstructionData[] = [];
-        if (transaction.transaction.message.instructions) {
-            for (const instruction of transaction.transaction.message.instructions) {
-                instructions.push({
-                    programId: instruction.programId.toBase58(),
-                    accounts: instruction.accounts.map((accountIndex: number) => // Specify accountIndex type
-                        transaction.transaction.message.accountKeys[accountIndex].toBase58()
-                    ),
-                    data: instruction.data.toString('hex'),
-                });
+        
+        try {
+            // Check for basic instructions
+            if (transaction?.transaction?.message?.instructions) {
+                for (const instruction of transaction.transaction.message.instructions) {
+                    try {
+                        instructions.push({
+                            programId: instruction.programId?.toBase58() || '',
+                            accounts: instruction.accounts?.map((accountIndex: number) => 
+                                transaction.transaction.message.accountKeys[accountIndex]?.toBase58() || ''
+                            ) || [],
+                            data: instruction.data?.toString('hex') || '',
+                        });
+                    } catch (err) {
+                        console.error('Error processing instruction:', err);
+                        // Add a placeholder or partial data instead of failing the entire method
+                        instructions.push({
+                            programId: 'error-processing',
+                            accounts: [],
+                            data: '',
+                        });
+                    }
+                }
             }
+            
+            if (transaction?.meta?.innerInstructions) {
+                for (const innerInstructionSet of transaction.meta.innerInstructions) {
+                    for (const innerInstruction of innerInstructionSet.instructions) {
+                        try {
+                            instructions.push({
+                                programId: innerInstruction.programId?.toBase58() || '',
+                                accounts: innerInstruction.accounts?.map((accountIndex: number) => 
+                                    transaction.transaction.message.accountKeys[accountIndex]?.toBase58() || ''
+                                ) || [],
+                                data: innerInstruction.data?.toString('hex') || '',
+                                isInner: true,
+                            });
+                        } catch (err) {
+                            console.error('Error processing inner instruction:', err);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error extracting instructions:', error);
         }
+        
         return instructions;
     }
 
@@ -282,8 +318,24 @@ export class SolanaService {
                 recentBlockHash: transaction.transaction?.message?.recentBlockhash,
                 version: version,
                 logs: transaction.meta?.logMessages || [],
-                accounts: await this.extractAccounts(transaction),
+                accounts: [],
+                instructions: []
             };
+
+            try {
+                transactionData.accounts = await this.extractAccounts(transaction);
+            } catch (accountError) {
+                console.error('Error extracting accounts:', accountError);
+                transactionData.accounts = [];
+            }
+    
+            // Extract instructions with proper error handling
+            try {
+                transactionData.instructions = this.extractInstructions(transaction);
+            } catch (instructionError) {
+                console.error('Error extracting instructions:', instructionError);
+                transactionData.instructions = [];
+            }
 
             this.transactionCache.set(signature, transactionData);
             return transactionData;
