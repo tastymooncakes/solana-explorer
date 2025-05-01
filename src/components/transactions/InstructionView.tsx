@@ -26,35 +26,27 @@ export default function InstructionView({ instructions }: InstructionViewProps) 
                 className={`mb-4 border border-gray-700 rounded-lg ${level > 0 ? 'ml-6 border-l-4 border-l-purple-700' : ''}`}
             >
                 <div 
-                    className="flex justify-between items-center p-4 cursor-pointer bg-gray-750 hover:bg-gray-700 rounded-t-lg"
+                    className="flex justify-between items-center p-4 cursor-pointer bg-gray-750 hover:bg-gray-700 rounded-t-lg overflow-hidden"
                     onClick={() => toggleExpand(index)}
                 >
-                    <div className="flex items-center gap-3">
-                        <span className="text-gray-300 text-sm font-medium">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-gray-300 text-sm font-medium whitespace-nowrap">
                             {level === 0 ? `Instruction #${index + 1}` : `Inner #${index + 1}`}
                         </span>
                         {instruction.isInner && (
-                            <span className="bg-purple-700 text-xs px-2 py-1 rounded-full">
+                            <span className="bg-purple-700 text-xs px-2 py-1 rounded-full whitespace-nowrap">
                                 Inner
                             </span>
                         )}
                         {hasChildren && (
-                            <span className="bg-blue-700 text-xs px-2 py-1 rounded-full">
-                                Has Inner Instructions ({instruction.childInstructions!.length})
+                            <span className="bg-blue-700 text-xs px-2 py-1 rounded-full whitespace-nowrap">
+                                Has Inner ({instruction.childInstructions!.length})
                             </span>
                         )}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">
-                            Program: 
-                        </span>
-                        <span className="text-xs text-gray-300 font-mono">
-                            {instruction.programId && instruction.programId.length > 16 
-                                ? `${instruction.programId.slice(0, 8)}...${instruction.programId.slice(-8)}`
-                                : instruction.programId}
-                        </span>
+                    <div className="flex items-center gap-2 ml-2 min-w-0">
                         <svg 
-                            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'transform rotate-180' : ''}`} 
+                            className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isExpanded ? 'transform rotate-180' : ''}`} 
                             fill="none" 
                             stroke="currentColor" 
                             viewBox="0 0 24 24" 
@@ -71,7 +63,7 @@ export default function InstructionView({ instructions }: InstructionViewProps) 
                             <div className="mb-4">
                                 <h3 className="text-sm font-medium text-gray-300 mb-2">Program ID</h3>
                                 <div className="bg-gray-900 p-2 rounded-md text-sm font-mono text-gray-300 overflow-x-auto">
-                                    {instruction.programId}
+                                    <div className="whitespace-nowrap">{instruction.programId}</div>
                                 </div>
                             </div>
                             
@@ -89,7 +81,7 @@ export default function InstructionView({ instructions }: InstructionViewProps) 
                                             {instruction.accounts.map((account, accountIndex) => (
                                                 <tr key={accountIndex} className="border-t border-gray-800">
                                                     <td className="py-1 px-2">{accountIndex}</td>
-                                                    <td className="py-1 px-2">{account}</td>
+                                                    <td className="py-1 px-2 whitespace-nowrap">{account}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -101,7 +93,7 @@ export default function InstructionView({ instructions }: InstructionViewProps) 
                                 <h3 className="text-sm font-medium text-gray-300 mb-2">Data (Hex)</h3>
                                 <div className="bg-gray-900 p-2 rounded-md text-sm font-mono text-gray-300 overflow-x-auto">
                                     {instruction.data && instruction.data.length > 0 ? (
-                                        <div className="break-all whitespace-pre-wrap">{instruction.data}</div>
+                                        <div className="whitespace-pre-wrap break-all">{instruction.data}</div>
                                     ) : (
                                         <span className="text-gray-500">No data</span>
                                     )}

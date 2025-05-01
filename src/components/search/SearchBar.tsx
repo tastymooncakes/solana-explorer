@@ -66,14 +66,22 @@ export default function SearchBar() {
       if (results?.type === 'block' && results.data) {
         const blockData = results.data as import('@/lib/types').BlockData;
         router.push(`/block/${blockData.slot}`);
+        // Clear the search input after navigation
+        setQuery('');
       } else if (results?.type === 'transaction' && results.data) {
         const txData = results.data as import('@/lib/types').TransactionData;
         router.push(`/tx/${txData.signature}`);
+        // Clear the search input after navigation
+        setQuery('');
       } else if (results?.type === 'address' && results.data) {
         router.push(`/address/${results.data}`);
+        // Clear the search input after navigation
+        setQuery('');
       } else {
         // Otherwise go to search results page
         router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+        // Clear the search input after navigation
+        setQuery('');
       }
       
       // Clear results after navigation
@@ -95,9 +103,10 @@ export default function SearchBar() {
     }
   };
   
-  // Hide results when clicking a result
+  // Hide results when clicking a result and clear input
   const handleResultClick = () => {
     setShowResults(false);
+    setQuery(''); // Clear the query when a result is clicked
   };
   
   return (

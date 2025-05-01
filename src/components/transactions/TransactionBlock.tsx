@@ -16,7 +16,7 @@ export default function TransactionBlock({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
       <h2 className="text-xl font-semibold mb-4">Overview</h2>
       
-      <div className="space-y-0 text-sm">
+      <div className="space-y-0 text-sm overflow-x-auto w-full">
         <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
           <span className="text-gray-500 dark:text-gray-400">Signature:</span>
           <span className="font-mono" title={transaction.signature}>{truncateHash(transaction.signature)}</span>
@@ -55,7 +55,7 @@ export default function TransactionBlock({
 
         <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
           <span className="text-gray-500 dark:text-gray-400">Recent Blockhash:</span>
-          <span className="font-mono">{transaction.recentBlockHash || 'Not Available'}</span>
+          <span className="font-mono">{truncateHash(transaction.recentBlockHash || 'Not Available')}</span>
         </div>
 
         <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">

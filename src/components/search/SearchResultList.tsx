@@ -41,7 +41,9 @@ export default function SearchResultsList({
         <Link 
           href={`/block/${blockData.slot}`}
           className="block p-3 hover:bg-gray-700 border-b border-gray-700"
-          onClick={onResultClick}
+          onClick={() => {
+            if (onResultClick) onResultClick();
+          }}
         >
           <div className="text-xs text-gray-400 uppercase">BLOCK</div>
           <div className="font-semibold">Slot #{blockData.slot}</div>
@@ -60,7 +62,9 @@ export default function SearchResultsList({
         <Link 
           href={`/tx/${transactionData.signature}`}
           className="block p-3 hover:bg-gray-700 border-b border-gray-700"
-          onClick={onResultClick}
+          onClick={() => {
+            if (onResultClick) onResultClick();
+          }}
         >
           <div className="text-xs text-gray-400 uppercase">TRANSACTION</div>
           <div className="font-mono text-sm truncate">
