@@ -505,7 +505,7 @@ export class SolanaService {
             innerSet.instructions.forEach((innerInstruction: any, innerIndex: number) => {
                 try {
                     // Get program ID
-                    let programId = this.getProgramId(innerInstruction, accountKeys, innerIndex, true);
+                    const programId = this.getProgramId(innerInstruction, accountKeys, innerIndex, true);
                     
                     // Process accounts
                     const accounts = this.getInstructionAccounts(innerInstruction, accountKeys);
