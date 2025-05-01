@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import { TransactionData } from "@/lib/types";
 import TransactionBlock from "./TransactionBlock";
 import { useParams } from 'next/navigation';
-import SearchBar from "../search/SearchBar";
 import AccountView from "./AccountView";
 import LogView from "./LogView";
 import InstructionView from "./InstructionView";

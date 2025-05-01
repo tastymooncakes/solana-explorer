@@ -5,7 +5,6 @@ import React, { useEffect, useState } from "react";
 import { BlockData } from "@/lib/types";
 import BlockSummary from "./BlockSummary";
 import { useParams } from 'next/navigation';
-import SearchBar from "../search/SearchBar";
 import TransactionSummary from "./TransactionSummary";
 
 

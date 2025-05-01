@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import { SolanaService } from '@/services/solanaService';
 import { BlockData } from '@/lib/types';
-import SearchBar from '@/components/search/SearchBar';
 import Link from 'next/link';
-import Header from '@/components/ui/Header';
 
 export default function Dashboard() {
   const [recentBlocks, setRecentBlocks] = useState<BlockData[]>([]);
