@@ -241,7 +241,7 @@ export class SolanaService {
     private calculateComputeUnits(tx: any): number | null {
         let computeUnits: number | null = null;
         if (tx.meta && tx.meta.computeUnitsConsumed) {
-            if (tx.meta.computeUnitsConsumed <= 2100) {
+            if (tx.meta.computeUnitsConsumed <= 2400) {
                 computeUnits = 0;
             } else {
                 computeUnits = tx.meta.computeUnitsConsumed;

@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Solana Explorer
 
-## Getting Started
+A simple block explorer interface for the Solana blockchain, built with React, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+*   **View Latest Blocks:** Displays the most recent blocks confirmed on the network.
+*   **View Block Details:** Shows the list of transactions included in a specific block.
+*   **View Transaction Details:** Provides detailed information for a specific transaction, including:
+    *   Involved accounts
+    *   Program instructions
+    *   Program execution logs
+*   **Search:** Allows searching by:
+    *   Block slot number
+    *   Transaction signature
+
+## Architecture
+
+*   **Frontend Framework:** React with TypeScript
+*   **Styling:** Tailwind CSS with Shadcn UI components
+*   **Routing:** React Router
+*   **Solana Interaction:** `@solana/web3.js` library connecting directly to a Solana RPC endpoint.
+*   **State Management:** React Hooks (`useState`, `useEffect`, custom hooks).
+*   **Structure:** Component-based (`components`, `pages`), custom hooks (`hooks`), utility functions (`lib`).
+
+## Requirements
+
+*   Node.js (v16 or later recommended)
+*   npm or yarn
+
+## Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/tastymooncakes/solana-explorer.git
+    ```
+2.  Navigate into the project directory:
+    ```bash
+    cd solana-explorer
+    ```
+3.  Install dependencies:
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+
+## Configuration
+
+The application connects to a Solana RPC endpoint. By default, it uses the public Solana Devnet RPC. You can configure a different endpoint (e.g., Mainnet-beta, Testnet, or a custom/private RPC) by creating a `.env` file in the project root:
+
+```.env
+# Example using the public Mainnet-beta RPC
+REACT_APP_SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+
+# Example using the public Devnet RPC (default if not set)
+# REACT_APP_SOLANA_RPC_URL=https://api.devnet.solana.com
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+*(Note: This requires applying the suggested code change in `src/hooks/useSolana.ts` mentioned in the analysis)*
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How to Run (Development)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1.  Make sure you have completed the Installation and Configuration steps.
+2.  Start the development server:
+    ```bash
+    npm start
+    # or
+    yarn start
+    ```
+3.  Open your browser and navigate to `http://localhost:3000`.
 
-## Learn More
+## How to Build (Production)
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1.  Run the build script:
+    ```bash
+    npm run build
+    # or
+    yarn build
+    ```
+2.  This command creates an optimized static build of the application in the `build/` directory. You can then deploy the contents of this directory to any static file hosting service.
