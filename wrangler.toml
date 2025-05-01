@@ -1,0 +1,14 @@
+name = "solana-explorer"
+compatibility_date = "2025-05-01"
+
+# For Next.js applications on Cloudflare Pages
+[
+build
+]
+command = "npm run build"
+
+# Specify where your built assets are located
+[
+site
+]
+bucket = "./.next"
