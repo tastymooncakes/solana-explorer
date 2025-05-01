@@ -1,15 +1,44 @@
-export async function generateMetadata({ params }: { params: { slot: string } }) {
-  const { slot } = await Promise.resolve(params); // ensures compatibility with async behavior
+import React from 'react';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+
+// Adjust the props type to make params a Promise
+type BlockLayoutProps = {
+  children: React.ReactNode;
+  params: Promise<{
+    slot: string;
+  }>;
+};
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ slot: string }> 
+}): Promise<Metadata> {
+  const resolvedParams = await params;
   return {
-    title: `Block | ${slot} | Solana Explorer`,
-    description: `Details for Solana block #${slot}`,
+    title: `Block ${resolvedParams.slot} | Solana Explorer`,
   };
 }
+
+// Correctly handle the Promise params
+export default async function BlockLayout({ 
+  children, 
+  params 
+}: BlockLayoutProps) {
+  // Await the params Promise
+  const resolvedParams = await params;
   
-export default function BlockLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <div>{children}</div>;
+  // Then use the resolved value for validation
+  const slotNumber = parseInt(resolvedParams.slot);
+  
+  if (isNaN(slotNumber) || slotNumber.toString() !== resolvedParams.slot) {
+    notFound();
+  }
+
+  return (
+    <div className="container mx-auto">
+      {children}
+    </div>
+  );
 }
