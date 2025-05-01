@@ -47,9 +47,6 @@ export default function TransactionDetailPage() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="mb-8">
-                <SearchBar />
-            </div>
             <div>
                 <h1 className="text-xs text-gray-500 font-bold">DETAILS</h1>
                 <p className="text-2xl mb-6">Transaction</p>
@@ -73,8 +70,8 @@ export default function TransactionDetailPage() {
             {!loading && !error && transaction && (
                 <>
                     <TransactionBlock transaction={transaction} />
-                    {transaction.instructions && <InstructionView instructions={transaction.instructions} />}
                     {transaction.accounts && <AccountView accounts={transaction.accounts} />}
+                    {transaction.instructions && <InstructionView instructions={transaction.instructions} />}
                     {transaction.logs && <LogView logs={transaction.logs} />}
                 </>
             )}

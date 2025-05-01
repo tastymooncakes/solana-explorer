@@ -41,6 +41,10 @@ export interface InstructionData {
     accounts: string[];
     data: string;
     isInner?: boolean;
+    parentIndex?: number;
+    childInstructions?: InstructionData[];
+    innerIndex?: number;
+    mainInstructionIndex?:number
 }
 
 export interface SortOptions {

@@ -188,85 +188,284 @@ export class SolanaService {
     }
 
     private extractInstructions(transaction: any): InstructionData[] {
-        const instructions: InstructionData[] = [];
+        const mainInstructions: InstructionData[] = [];
         
         try {
-            // Check for basic instructions
-            if (transaction?.transaction?.message?.instructions) {
-                for (const instruction of transaction.transaction.message.instructions) {
-                    try {
-                        instructions.push({
-                            programId: transaction.transaction.message.accountKeys[instruction.programIdIndex]?.toBase58() || '',
-                            accounts: instruction.accounts?.map((accountIndex: number) => 
-                                transaction.transaction.message.accountKeys[accountIndex]?.toBase58() || ''
-                            ) || [],
-                            data: instruction.data?.toString('hex') || '',
-                        });
-                        console.log("instructions", instructions)
-                    } catch (err) {
-                        console.error('Error processing instruction:', err);
-                        // Add a placeholder or partial data instead of failing the entire method
-                        instructions.push({
-                            programId: 'error-processing',
-                            accounts: [],
-                            data: '',
-                        });
-                    }
-                }
-            }
+            console.log("Transaction structure for instructions:", {
+                hasTransaction: !!transaction.transaction,
+                hasMessage: !!transaction.transaction?.message,
+                hasInstructions: !!transaction.transaction?.message?.instructions,
+                instructionsCount: transaction.transaction?.message?.instructions?.length || 0,
+                hasInnerInstructions: !!transaction.meta?.innerInstructions,
+                innerInstructionsCount: transaction.meta?.innerInstructions?.length || 0
+            });
             
-            if (transaction?.meta?.innerInstructions) {
-                for (const innerInstructionSet of transaction.meta.innerInstructions) {
-                    for (const innerInstruction of innerInstructionSet.instructions) {
-                        try {
-                            instructions.push({
-                                programId: transaction.transaction.message.accountKeys[innerInstruction.programIdIndex]?.toBase58() || '',
-                                accounts: innerInstruction.accounts?.map((accountIndex: number) => 
-                                    transaction.transaction.message.accountKeys[accountIndex]?.toBase58() || ''
-                                ) || [],
-                                data: innerInstruction.data?.toString('hex') || '',
-                                isInner: true,
-                            });
-                        } catch (err) {
-                            console.error('Error processing inner instruction:', err);
+            // Get account keys
+            const accountKeys = transaction.transaction?.message?.accountKeys || [];
+            console.log("Total account keys:", accountKeys.length);
+            
+            // Extract main instructions
+            const mainInstructionsData = transaction.transaction?.message?.instructions || [];
+            console.log(`Found ${mainInstructionsData.length} main instructions`);
+            
+            // Process main instructions first
+            mainInstructionsData.forEach((instruction: any, index: number) => {
+                try {
+                    // Get program ID
+                    let programId = '';
+                    if (instruction.programIdIndex !== undefined && instruction.programIdIndex < accountKeys.length) {
+                        programId = String(accountKeys[instruction.programIdIndex]);
+                        console.log(`Main instruction ${index} program: ${programId}`);
+                    } else {
+                        console.warn(`Invalid program ID index: ${instruction.programIdIndex}`);
+                    }
+                    
+                    // Process accounts
+                    const accounts: string[] = [];
+                    if (instruction.accounts && Array.isArray(instruction.accounts)) {
+                        for (const accountIndex of instruction.accounts) {
+                            if (accountIndex !== undefined && accountIndex < accountKeys.length) {
+                                accounts.push(String(accountKeys[accountIndex]));
+                            } else {
+                                console.warn(`Invalid account index: ${accountIndex}`);
+                                accounts.push('');
+                            }
                         }
                     }
+                    
+                    // Create main instruction object with empty childInstructions array
+                    const instructionObj: InstructionData = {
+                        programId,
+                        accounts,
+                        data: typeof instruction.data === 'string' ? instruction.data : '',
+                        childInstructions: []  // Initialize empty array for child instructions
+                    };
+                    
+                    // Add to main instructions array
+                    mainInstructions.push(instructionObj);
+                    console.log(`Added main instruction ${index}, total count: ${mainInstructions.length}`);
+                    
+                } catch (err) {
+                    console.error(`Error processing main instruction ${index}:`, err);
                 }
-            }
+            });
+            
+            // Process inner instructions and organize them hierarchically
+            const innerInstructionSets = transaction.meta?.innerInstructions || [];
+            console.log(`Found ${innerInstructionSets.length} inner instruction sets`);
+            
+            innerInstructionSets.forEach((innerSet: any) => {
+                const parentIndex = innerSet.index;
+                console.log(`Processing inner set for main instruction ${parentIndex}`);
+                
+                // Find the parent instruction
+                if (parentIndex >= 0 && parentIndex < mainInstructions.length) {
+                    const parentInstruction = mainInstructions[parentIndex];
+                    
+                    // Process all inner instructions in this set
+                    if (innerSet.instructions && Array.isArray(innerSet.instructions)) {
+                        innerSet.instructions.forEach((innerInstruction: any, innerIndex: number) => {
+                            try {
+                                // Get program ID
+                                let programId = '';
+                                if (innerInstruction.programIdIndex !== undefined && innerInstruction.programIdIndex < accountKeys.length) {
+                                    programId = String(accountKeys[innerInstruction.programIdIndex]);
+                                    console.log(`Inner instruction ${innerIndex} program: ${programId}`);
+                                } else {
+                                    console.warn(`Invalid inner program ID index: ${innerInstruction.programIdIndex}`);
+                                }
+                                
+                                // Process accounts
+                                const accounts: string[] = [];
+                                if (innerInstruction.accounts && Array.isArray(innerInstruction.accounts)) {
+                                    for (const accountIndex of innerInstruction.accounts) {
+                                        if (accountIndex !== undefined && accountIndex < accountKeys.length) {
+                                            accounts.push(String(accountKeys[accountIndex]));
+                                        } else {
+                                            console.warn(`Invalid inner account index: ${accountIndex}`);
+                                            accounts.push('');
+                                        }
+                                    }
+                                }
+                                
+                                // Create inner instruction object
+                                const innerInstructionObj: InstructionData = {
+                                    programId,
+                                    accounts,
+                                    data: typeof innerInstruction.data === 'string' ? innerInstruction.data : '',
+                                    isInner: true,
+                                    parentIndex: parentIndex,
+                                    innerIndex: innerIndex,
+                                    mainInstructionIndex: parentIndex
+                                };
+                                
+                                // Add to parent's childInstructions array
+                                parentInstruction.childInstructions!.push(innerInstructionObj);
+                                console.log(`Added inner instruction to parent ${parentIndex}, inner index ${innerIndex}`);
+                                
+                            } catch (err) {
+                                console.error(`Error processing inner instruction ${innerIndex} for parent ${parentIndex}:`, err);
+                            }
+                        });
+                    }
+                } else {
+                    console.warn(`Invalid parent index ${parentIndex} for inner instruction set`);
+                }
+            });
+            
+            console.log(`Extraction complete. Total main instructions: ${mainInstructions.length}`);
+            console.log(`Total inner instructions: ${mainInstructions.reduce((count, inst) => count + (inst.childInstructions?.length || 0), 0)}`);
+            
         } catch (error) {
             console.error('Error extracting instructions:', error);
         }
         
-        return instructions;
+        return mainInstructions;
     }
 
     private async extractAccounts(transaction: any): Promise<AccountData[]> {
         const accounts: AccountData[] = [];
-        if (transaction.transaction.message.accountKeys) {
-            for (let i = 0; i < transaction.transaction.message.accountKeys.length; i++) {
-                const accountKey = transaction.transaction.message.accountKeys[i];
-                const accountData: AccountData = {
-                    pubKey: accountKey.toBase58(),
-                    writable: transaction.transaction.message.isAccountWritable(accountKey, false),
-                    signer: transaction.transaction.message.isAccountSigner(accountKey, false),
-                };
-    
-                //  Logic to determine change and postBalance
-                try {
-                    if (transaction.meta && transaction.meta.preBalances && transaction.meta.postBalances) {
-                        accountData.change = transaction.meta.postBalances[i] - transaction.meta.preBalances[i];
-                        accountData.balance = transaction.meta.postBalances[i];
-                    }
-                } catch (error) {
-                    console.error(`Error processing account ${accountKey.toBase58()}:`, error);
-                    accountData.change = null;
-                    accountData.balance = null;
-                    accountData.details = null;
+        
+        try {
+            console.log("Extracting accounts from transaction with lookup table support...");
+            
+            // Track all the accounts we're processing
+            let allAccountKeys: string[] = [];
+            
+            // Step 1: Get the base account keys from the transaction message
+            let baseAccountKeys: string[] = [];
+            if (transaction?.transaction?.message?.accountKeys) {
+                baseAccountKeys = transaction.transaction.message.accountKeys.map(String);
+                console.log(`Found ${baseAccountKeys.length} base account keys in transaction.transaction.message.accountKeys`);
+            } else if (transaction?.message?.accountKeys) {
+                baseAccountKeys = transaction.message.accountKeys.map(String);
+                console.log(`Found ${baseAccountKeys.length} base account keys in transaction.message.accountKeys`);
+            } else {
+                console.error("Could not locate base account keys in transaction");
+                return accounts;
+            }
+            
+            // Add base account keys to our master list
+            allAccountKeys = [...baseAccountKeys];
+            
+            // Step 2: Check for loaded addresses from address table lookups (for V0 transactions)
+            let loadedReadonlyAddresses: string[] = [];
+            let loadedWritableAddresses: string[] = [];
+            
+            // Check if this transaction has loaded addresses
+            if (transaction?.meta?.loadedAddresses) {
+                if (Array.isArray(transaction.meta.loadedAddresses.readonly)) {
+                    loadedReadonlyAddresses = transaction.meta.loadedAddresses.readonly.map(String);
+                    console.log(`Found ${loadedReadonlyAddresses.length} loaded readonly addresses`);
                 }
-    
+                
+                if (Array.isArray(transaction.meta.loadedAddresses.writable)) {
+                    loadedWritableAddresses = transaction.meta.loadedAddresses.writable.map(String);
+                    console.log(`Found ${loadedWritableAddresses.length} loaded writable addresses`);
+                }
+                
+                // Add loaded addresses to our master list
+                allAccountKeys = [...baseAccountKeys, ...loadedWritableAddresses, ...loadedReadonlyAddresses];
+                console.log(`Combined ${allAccountKeys.length} total account keys (base + loaded)`);
+            }
+            
+            // Get message header for determining which accounts are writable/signers
+            let header;
+            if (transaction?.transaction?.message?.header) {
+                header = transaction.transaction.message.header;
+            } else if (transaction?.message?.header) {
+                header = transaction.message.header;
+            } else {
+                console.error("Transaction message header is missing");
+                return accounts;
+            }
+            
+            console.log("Message header:", header);
+            
+            // Check for pre/post balances
+            let preBalances: number[] = [];
+            let postBalances: number[] = [];
+            
+            if (transaction?.meta?.preBalances) {
+                preBalances = transaction.meta.preBalances;
+            }
+            
+            if (transaction?.meta?.postBalances) {
+                postBalances = transaction.meta.postBalances;
+            }
+            
+            console.log(`Pre-balances: ${preBalances.length}, Post-balances: ${postBalances.length}`);
+            
+            // Verify we have the expected number of accounts
+            if (allAccountKeys.length !== preBalances.length) {
+                console.warn(`Warning: Account keys count (${allAccountKeys.length}) doesn't match preBalances count (${preBalances.length})`);
+            }
+            
+            // Calculate account types based on header and loaded addresses
+            const numRequiredSignatures = header.numRequiredSignatures || 0;
+            const numReadonlySignedAccounts = header.numReadonlySignedAccounts || 0;
+            const numReadonlyUnsignedAccounts = header.numReadonlyUnsignedAccounts || 0;
+            
+            // Parse account information for all accounts
+            for (let i = 0; i < allAccountKeys.length; i++) {
+                const pubKey = allAccountKeys[i];
+                
+                // Determine if account is writable and signer
+                let isWritable = false;
+                let isSigner = false;
+                
+                // For base accounts, use header information
+                if (i < baseAccountKeys.length) {
+                    isSigner = i < numRequiredSignatures;
+                    isWritable = 
+                        (isSigner && i < numRequiredSignatures - numReadonlySignedAccounts) || 
+                        (!isSigner && i >= numRequiredSignatures && i < baseAccountKeys.length - numReadonlyUnsignedAccounts);
+                } 
+                // For loaded addresses, use their classification
+                else {
+                    const loadedIndex = i - baseAccountKeys.length;
+                    isWritable = loadedIndex < loadedWritableAddresses.length;
+                    isSigner = false; // Loaded addresses are never signers
+                }
+                
+                // Get pre and post balances if available
+                let preBalance = null;
+                let postBalance = null;
+                let balanceChange = null;
+                
+                if (preBalances && postBalances) {
+                    if (i < preBalances.length) {
+                        preBalance = preBalances[i];
+                    }
+                    
+                    if (i < postBalances.length) {
+                        postBalance = postBalances[i];
+                    }
+                    
+                    // Calculate balance change
+                    if (preBalance !== null && postBalance !== null) {
+                        balanceChange = postBalance - preBalance;
+                    }
+                }
+                
+                // Create account data
+                const accountData: AccountData = {
+                    pubKey,
+                    writable: isWritable,
+                    signer: isSigner,
+                    balance: postBalance,
+                    change: balanceChange
+                };
+                
                 accounts.push(accountData);
             }
+            
+            console.log(`Successfully extracted ${accounts.length} accounts`);
+            
+        } catch (error) {
+            console.error("Error extracting accounts:", error);
         }
+        
         return accounts;
     }
 
@@ -284,17 +483,28 @@ export class SolanaService {
 
         try {
             // Check if the signature is a valid base58 string
-            if (!/^[A-Za-z0-9]{88}$/.test(signature)) {
+            if (!/^[A-HJ-NP-Za-km-z1-9]+$/.test(signature)) {
                 throw new Error(`Invalid transaction signature format: ${signature}`);
             }
 
-            const transaction = await this.connection.getTransaction(signature, {
-                maxSupportedTransactionVersion: 0,
-            });
-
-            if (!transaction) {
+            const response = await (this.connection as any)._rpcRequest('getTransaction', [
+                signature,
+                {
+                    encoding: 'json',
+                    maxSupportedTransactionVersion: 0
+                }
+            ]);
+    
+            // Handle RPC errors
+            if (response.error) {
+                console.error("Transaction RPC error:", response.error);
                 return null;
             }
+    
+            // The transaction is in response.result
+            const transaction = response.result;
+    
+            console.log("Raw transaction from RPC:", transaction);
 
             let computeUnits: number | undefined = undefined;
             if (transaction.meta?.computeUnitsConsumed) {

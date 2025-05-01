@@ -44,9 +44,6 @@ export default function BlockDetailPage() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="mb-8">
-                <SearchBar />
-            </div>
             <div>
                 <h1 className="text-xs text-gray-500 font-bold">DETAILS</h1>
                 <p className="text-2xl mb-6">Block</p>

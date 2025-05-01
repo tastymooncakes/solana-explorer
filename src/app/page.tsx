@@ -5,6 +5,7 @@ import { SolanaService } from '@/services/solanaService';
 import { BlockData } from '@/lib/types';
 import SearchBar from '@/components/search/SearchBar';
 import Link from 'next/link';
+import Header from '@/components/ui/Header';
 
 export default function Dashboard() {
   const [recentBlocks, setRecentBlocks] = useState<BlockData[]>([]);
@@ -87,10 +88,6 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
       
-      <div className="mb-8">
-        <SearchBar />
-      </div>
-      
       {/* Network Stats */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Network Statistics</h2>
@@ -152,12 +149,6 @@ export default function Dashboard() {
             </table>
           </div>
         )}
-        
-        <div className="mt-4 text-right">
-          <Link href="/blocks" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-            View All Blocks →
-          </Link>
-        </div>
       </div>
     </div>
   );

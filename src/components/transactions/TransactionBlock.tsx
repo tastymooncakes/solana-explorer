@@ -54,7 +54,7 @@ export default function TransactionBlock({
         </div>
 
         <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-          <span className="text-gray-500 dark:text-gray-400">Recent Blockjash:</span>
+          <span className="text-gray-500 dark:text-gray-400">Recent Blockhash:</span>
           <span className="font-mono">{transaction.recentBlockHash || 'Not Available'}</span>
         </div>
 
